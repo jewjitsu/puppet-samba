@@ -28,10 +28,12 @@ class samba::params {
       $package = 'samba'
     }
     'Freebsd': {
-      $service = [ 'samba' ]
-      $secretstdb = '/var/lib/samba/secrets.tdb'
-      $config_file = '/usr/local/etc/smb.conf'
-      $package = 'samba36'
+      $service      = [ 'samba' ]
+      $secretstdb   = '/var/lib/samba/secrets.tdb'
+      $config_file  = '/usr/local/etc/smb.conf'
+      $config_file4 = '/usr/local/etc/smb4.conf'
+      $package      = 'samba36'
+      $package4     = 'samba4'
     }
     default: {
       $service = [ 'samba' ]

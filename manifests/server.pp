@@ -10,6 +10,7 @@
 #
 class samba::server (
   # Main smb.conf options
+  $samba_version            = 3,
   $workgroup                = 'MYGROUP',
   $server_string            = 'Samba Server Version %v',
   $netbios_name             = '',
@@ -42,17 +43,40 @@ class samba::server (
   $ldap_user_suffix         = undef,
 ) inherits ::samba::params {
 
+  # validate samba_version
+  if $samba_version != [ 3, 4 ] {
+    fail("$samba_version can only be 3 or 4")
+  }
+
+  # set params depending on version
+  if $samba_version == 3 {
+    $package     = $::samba::params::package
+    $config_file = $::samba::params::config_file
+  }
+
+  if $samba_version == 4 {
+    case $::osfamily {
+      'FreeBSD': {
+        $package     = $::samba::params::package4
+        $config_file = $::samba::params::config_file4
+      }
+      default: {
+        fail("samba4 is only supported on FreeBSD")
+      }
+    }
+  }
+
   # Main package and service
-  package { $::samba::params::package: ensure => 'installed' }
+  package { $package: ensure => 'installed' }
   service { $::samba::params::service:
     ensure    => 'running',
     enable    => true,
     hasstatus => true,
-    subscribe => File[$::samba::params::config_file],
+    subscribe => File[$config_file],
   }
 
-  file { $::samba::params::config_file:
-    require => Package[$::samba::params::package],
+  file { $config_file:
+    require => Package[$package],
     content => template('samba/smb.conf.erb'),
   }
 
